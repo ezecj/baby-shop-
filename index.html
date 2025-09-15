@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Baby Boutique 3D</title>
+  <style>
+    /* Base */
+    *{box-sizing:border-box;margin:0;padding:px;font-family:sans-serif}
+    body{background:linear-gradient(180deg,#f9fcff,#eef7ff);color:#0f172a}
+
+    header{display:flex;justify-content:space-between;align-items:center;padding:20px 40px;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.06);position:sticky;top:0;z-index:10}
+    header h1{font-size:22px;color:#0369a1}
+    nav a{margin:0 12px;text-decoration:none;color:#0369a1;font-weight:600}
+
+    /* Hero */
+    .hero{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:30px;padding:60px 40px}
+    .hero-text h2{font-size:34px;margin-bottom:12px}
+    .hero-text p{color:#555;margin-bottom:18px}
+    .hero-text button{padding:12px 20px;border:none;border-radius:10px;background:#60a5fa;color:white;font-weight:700;cursor:pointer}
+    
+    .stage{perspective:1000px;height:320px;display:flex;align-items:center;justify-content:center}
+    .scene{width:260px;height:180px;transform-style:preserve-3d;transition:transform 0.2s}
+    .box{width:100%;height:100%;border-radius:20px;background:linear-gradient(180deg,#fff,#f3fbff);box-shadow:0 18px 40px rgba(0,0,0,0.12);position:relative}
+    .wheel{width:28px;height:28px;border-radius:50%;background:#111827;position:absolute;bottom:-14px}
+    .wheel.left{left:20px}
+    .wheel.right{right:20px}
+
+    /* Products */
+    .products{padding:50px}
+    .products h3{margin-bottom:20px;font-size:26px;color:#0369a1}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px}
+    .card{background:white;border-radius:20px;padding:40px;box-shadow:0 10px 20px rgba(0,0,0,0.08);transition:transform 0.2s,box-shadow 0.2s}
+    .card:hover{transform:rotateX(6deg) rotateY(-6deg) translateY(-10px);box-shadow:0 20px 40px rgba(0,0,0,0.12)}
+    .card img{width:100%;height:160px;object-fit:cover;border-radius:12px;margin-bottom:10px}
+    .card h4{font-size:16px;margin-bottom:6px}
+    .card .price{font-weight:700;color:#0369a1}
+    .card button{margin-top:10px;padding:8px 12px;border:none;border-radius:8px;background:#7dd3fc;font-weight:700;cursor:pointer}
+
+    /* Cart */
+    .cart-btn{position:fixed;right:20px;bottom:20px;padding:14px 18px;background:#60a5fa;color:white;border:none;border-radius:12px;font-weight:800;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,0.18)}
+    .cart-panel{position:fixed;right:20px;bottom:80px;width:300px;max-height:70vh;background:white;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,0.18);padding:16px;display:none;overflow:auto}
+    .cart-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed #eee;font-size:14px}
+
+    /* Responsive */
+    @media(max-width:768px){
+      .hero{grid-template-columns:1fr}
+      .hero-text{text-align:center}
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Baby Boutique 3D</h1>
+    <nav>
+      <a href="#products">Shop</a>`
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-text">
+      <h2>Soft, Safe & Stylish Baby Essentials</h2>
+      <p>Explore our curated collection of baby clothes, toys, and accessories.</p>
+      <button onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'})">Shop Now</button>
+    </div>
+    <div class="stage" id="stage">
+      <div class="scene" id="scene">
+        <div class="box">
+          <div class="wheel left"></div>
+          <div class="wheel right"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Products -->
+  <section class="products" id="products">
+    <h3>Featured Products</h3>
+    <div class="grid" id="productGrid"></div>
+  </section>
+
+  <!-- Cart -->
+  <button class="cart-btn" id="cartBtn">Cart (0)</button>
+  <div class="cart-panel" id="cartPanel">
+    <h4>Your Cart</h4>
+    <div id="cartItems"></div>
+    <p style="font-weight:700">Total: ₦<span id="cartTotal">0</span></p>
+  </div>
+
+  <script>
+    // 3D tilt effect on hero stroller
+    const stage = document.getElementById("stage");
+    const scene = document.getElementById("scene");
+    stage.addEventListener("mousemove",(e)=>{
+      const rect = stage.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      scene.style.transform = `rotateX(${y * -20}deg) rotateY(${x * 20}deg)`;
+    });
+    stage.addEventListener("mouseleave",()=>{scene.style.transform="";});
+
+    // Demo products
+    const products = [
+      {id:1,name:"Organic Onesie",price:4200,img:"images/Onesie.jfif"},
+      {id:2,name:"Baby Stroller",price:65000,img:"images/stroller.jfif"},
+      {id:3,name:"Teething Toy",price:2300,img:"images/toy.png"},
+      {id:4,name:"Baby Blanket",price:7800,img:"images/blanket.jfif"},
+      {id:5,name:"Diaper Bag",price:15000,img:"images/bag.jfif"},
+      {id:6,name:"Pacifier Set",price:1200,img:"images/pacifier.jfif"},
+      {id:7,name:"Shoes",price:5000,img:"images/shoes.jfif"},
+      {id:8,name:"Bottle",price:3000,img:"images/bottle.jfif"},
+      {id:9,name:"Crib Mobile",price:9000,img:"images/mobile.jfif"},
+      {id:10,name:"Baby Monitor",price:25000,img:"images/monitor.jfif"}
+      
+    ];
+
+    const grid = document.getElementById("productGrid");
+    const cartBtn = document.getElementById("cartBtn");
+    const cartPanel = document.getElementById("cartPanel");
+    const cartItemsEl = document.getElementById("cartItems");
+    const cartTotalEl = document.getElementById("cartTotal");
+
+    let cart=[];
+
+    function renderProducts(){
+      grid.innerHTML="";
+      products.forEach(p=>{
+        const card=document.createElement("div");
+        card.className="card";
+        card.innerHTML=`<img src="${p.img}" alt="${p.name}"><h4>${p.name}</h4><div class='price'>₦${p.price.toLocaleString()}</div><button>Add to Cart</button>`;
+        card.querySelector("button").onclick=()=>addToCart(p);
+        grid.appendChild(card);
+      });
+    }
+
+    function addToCart(p){
+      const item=cart.find(i=>i.id===p.id);
+      if(item){item.qty++}else{cart.push({...p,qty:1})}
+      refreshCart();
+    }
+
+    function refreshCart(){
+      cartItemsEl.innerHTML="";
+      let total=0;
+      cart.forEach(i=>{
+        total+=i.price*i.qty;
+        const div=document.createElement("div");
+        div.className="cart-item";
+        div.innerHTML=`${i.name} x${i.qty} <strong>₦${(i.price*i.qty).toLocaleString()}</strong>`;
+        cartItemsEl.appendChild(div);
+      });
+      cartTotalEl.textContent=total.toLocaleString();
+      cartBtn.textContent=`Cart (${cart.reduce((s,i)=>s+i.qty,0)})`;
+    }
+
+    cartBtn.onclick=()=>cartPanel.style.display=cartPanel.style.display==="block"?"none":"block";
+
+    renderProducts();
+  </script>
+  
+</body>
+</html>
